@@ -21,7 +21,7 @@ Use AI-powered reply generation from **any app** via right-click → Services me
    - Pass input: **as arguments**
 6. Paste the contents of `reply-assistant.sh` into the script area
 7. **Replace** `YOUR_TOKEN_HERE` with your actual API token
-8. **Replace** `http://127.0.0.1:18789` with your Gateway URL
+8. **Replace** your Gateway URL with your Gateway URL
 9. **⌘S** to save, name it "Reply Assistant"
 
 ## Usage
@@ -37,11 +37,11 @@ Edit these variables in the script:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `GATEWAY_URL` | API endpoint base URL | `http://127.0.0.1:18789` |
+| `GATEWAY_URL` | API endpoint base URL | your Gateway URL |
 | `GATEWAY_TOKEN` | API authentication token | (required) |
 | `MODEL` | Model to use | `claude-sonnet-4-5-20250929` |
 
-> **Tip**: If accessing via Tailscale, use your Tailscale IP (e.g. `http://100.x.x.x:18789`)
+> **Tip**: If accessing via Tailscale, use your Tailscale IP (e.g. `http://your-tailscale-ip:PORT`)
 
 ## Keyboard Shortcut (Optional)
 

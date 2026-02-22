@@ -24,15 +24,15 @@ Both use an OpenAI-compatible API endpoint (e.g. [OpenClaw](https://github.com/o
 ### Configuration
 
 1. Click the Reply Assistant icon in the toolbar
-2. Set your **Gateway URL** (e.g. `http://127.0.0.1:18789`)
+2. Set your **Gateway URL** (e.g. `http://localhost:8080` or your API endpoint)
 3. Set your **Gateway Token**
 4. Click Save
 
-> **Tailscale users**: If accessing from another machine, use your Tailscale IP (e.g. `http://100.x.x.x:18789`) and add it to `host_permissions` in `manifest.json`:
+> **Tailscale users**: If accessing from another machine, use your Tailscale IP (e.g. `http://your-remote-ip:port`) and add it to `host_permissions` in `manifest.json`:
 > ```json
 > "host_permissions": [
->   "http://127.0.0.1:18789/*",
->   "http://100.x.x.x:18789/*"
+>   "http://localhost:*/*",
+>   "http://your-remote-ip:port/*"
 > ]
 > ```
 
@@ -82,7 +82,7 @@ brew install jq
 7. Paste into the script area in Automator, replacing the default `cat` command
 8. **Edit the configuration** at the top of the script:
    - Replace `YOUR_TOKEN_HERE` with your actual API token
-   - Replace `http://127.0.0.1:18789` with your Gateway URL
+   - Replace the Gateway URL with your API endpoint
 9. **⌘S** to save — name it **"Reply Assistant"**
 
 #### Step 3: Grant permissions (if prompted)
@@ -127,7 +127,7 @@ Now you can select text and press `⌘⇧R` instead of right-clicking!
 
 | Variable / Setting | Description | Default |
 |---|---|---|
-| `GATEWAY_URL` / Gateway URL | Your OpenAI-compatible API base URL | `http://127.0.0.1:18789` |
+| `GATEWAY_URL` / Gateway URL | Your OpenAI-compatible API base URL | (required) |
 | `GATEWAY_TOKEN` / Gateway Token | API authentication token | (required) |
 | `MODEL` | Model name (macOS version only) | `claude-sonnet-4-5-20250929` |
 
