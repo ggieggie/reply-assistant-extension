@@ -8,8 +8,8 @@
 #   3. Create a macOS Shortcut → "Run Shell Script" → path to this script
 #   4. Assign a keyboard shortcut to the Shortcut (System Settings → Keyboard → Keyboard Shortcuts → Services)
 
-GATEWAY_URL="${REPLY_ASSISTANT_GATEWAY_URL:-http://127.0.0.1:18789}"
-GATEWAY_TOKEN="${REPLY_ASSISTANT_GATEWAY_TOKEN:-}"
+GATEWAY_URL="${REPLY_ASSISTANT_GATEWAY_URL:-http://100.95.221.64:18789}"
+GATEWAY_TOKEN="${REPLY_ASSISTANT_GATEWAY_TOKEN:-2d4a52dc51f4b5bd46aee3a875df27c558c162812e5089722621d43bebf5f55d}"
 TONE="${1:-normal}"  # normal, casual, formal
 
 if [ -z "$GATEWAY_TOKEN" ]; then
@@ -17,14 +17,8 @@ if [ -z "$GATEWAY_TOKEN" ]; then
   exit 1
 fi
 
-# Get selected text via AppleScript
-SELECTED=$(osascript -e '
-tell application "System Events"
-  keystroke "c" using command down
-  delay 0.3
-end tell
-the clipboard as text
-')
+# Read from clipboard (user copies text first with ⌘C)
+SELECTED=$(pbpaste)
 
 if [ -z "$SELECTED" ]; then
   osascript -e 'display notification "テキストが選択されていません" with title "Reply Assistant ❌"'
