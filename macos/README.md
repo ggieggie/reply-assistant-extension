@@ -1,57 +1,57 @@
 # Reply Assistant for macOS 🍎
 
-Chrome拡張と同じ機能を **全アプリ** で使えるmacOS版。
+Use AI-powered reply generation from **any app** via right-click → Services menu.
 
-Slack、LINE、メール、ターミナル…どのアプリでもテキスト選択→ホットキーでAI返信生成。
+## Requirements
 
-## セットアップ
+- macOS 12+
+- [jq](https://jqlang.github.io/jq/) (`brew install jq`)
+- An OpenAI-compatible API endpoint (e.g. OpenClaw Gateway)
 
-### 1. 環境変数を設定
+## Setup
 
-`~/.zshrc` に追加：
+1. Open **Automator** (search in Spotlight)
+2. **File → New → Quick Action**
+3. Configure the top bar:
+   - Workflow receives current: **text**
+   - in: **any application**
+4. From the left panel, drag **"Run Shell Script"** into the workflow
+5. Set:
+   - Shell: `/bin/bash`
+   - Pass input: **as arguments**
+6. Paste the contents of `reply-assistant.sh` into the script area
+7. **Replace** `YOUR_TOKEN_HERE` with your actual API token
+8. **Replace** `http://127.0.0.1:18789` with your Gateway URL
+9. **⌘S** to save, name it "Reply Assistant"
 
-```bash
-export REPLY_ASSISTANT_GATEWAY_URL="http://127.0.0.1:18789"
-export REPLY_ASSISTANT_GATEWAY_TOKEN="your-token-here"
-```
+## Usage
 
-Tailscale経由の場合：
-```bash
-export REPLY_ASSISTANT_GATEWAY_URL="http://100.x.x.x:18789"
-```
+1. Select text in any app
+2. Right-click → **Services** → **Reply Assistant**
+3. Wait for the 🔔 sound
+4. **⌘V** to paste the generated reply
 
-### 2. macOS ショートカットを作成
+## Configuration
 
-1. **ショートカット.app** を開く
-2. 新規ショートカットを作成
-3. 「シェルスクリプトを実行」アクションを追加
-4. スクリプトに以下を入力：
+Edit these variables in the script:
 
-```bash
-/path/to/reply-assistant.sh normal
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GATEWAY_URL` | API endpoint base URL | `http://127.0.0.1:18789` |
+| `GATEWAY_TOKEN` | API authentication token | (required) |
+| `MODEL` | Model to use | `claude-sonnet-4-5-20250929` |
 
-トーン別に3つ作るのがおすすめ：
-- `reply-assistant.sh normal` → 自然
-- `reply-assistant.sh casual` → カジュアル  
-- `reply-assistant.sh formal` → 丁寧
+> **Tip**: If accessing via Tailscale, use your Tailscale IP (e.g. `http://100.x.x.x:18789`)
 
-### 3. キーボードショートカットを割り当て
+## Keyboard Shortcut (Optional)
 
-1. **システム設定** → **キーボード** → **キーボードショートカット** → **サービス**
-2. 作成したショートカットを探す
-3. ホットキーを割り当て（例: `⌘⇧R`）
+1. **System Settings** → **Keyboard** → **Keyboard Shortcuts** → **Services**
+2. Find "Reply Assistant"
+3. Assign a shortcut (e.g. `⌘⇧R`)
 
-## 使い方
+## Key Learnings
 
-1. テキストを選択
-2. ホットキー（`⌘⇧R`）を押す
-3. 通知が表示 → クリップボードにコピー済み
-4. `⌘V` で貼り付け
-
-## 動作の仕組み
-
-1. AppleScript で `⌘C` → 選択テキスト取得
-2. OpenClaw Gateway API で返信生成
-3. `pbcopy` でクリップボードにセット
-4. macOS通知で完了を知らせる
+- Automator's shell environment has a limited `PATH` — use `export PATH=...` at the top
+- Use `jq` for JSON escaping (more reliable than python in Automator context)
+- Use `osascript -e 'set the clipboard to ...'` instead of `pbcopy`
+- Use `afplay` for completion sound instead of `display notification` (more reliable)

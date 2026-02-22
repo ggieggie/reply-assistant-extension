@@ -1,85 +1,55 @@
 #!/bin/bash
-# Reply Assistant for macOS - works in any app
-# Usage: Assign this script to a global hotkey via macOS Shortcuts or Automator
+# Reply Assistant for macOS - Quick Action (right-click → Services)
+# Works in any app that supports macOS Services
 #
 # Setup:
-#   1. Set REPLY_ASSISTANT_GATEWAY_URL and REPLY_ASSISTANT_GATEWAY_TOKEN below (or as env vars)
-#   2. chmod +x reply-assistant.sh
-#   3. Create a macOS Shortcut → "Run Shell Script" → path to this script
-#   4. Assign a keyboard shortcut to the Shortcut (System Settings → Keyboard → Keyboard Shortcuts → Services)
+#   1. Open Automator → New → Quick Action
+#   2. Set "Workflow receives current" to "text" in "any application"
+#   3. Add "Run Shell Script" action
+#   4. Shell: /bin/bash, Pass input: "as arguments"
+#   5. Paste this script (with your Gateway URL and Token)
+#   6. Save as "Reply Assistant"
+#
+# Requires: jq (brew install jq)
 
-GATEWAY_URL="${REPLY_ASSISTANT_GATEWAY_URL:-http://100.95.221.64:18789}"
-GATEWAY_TOKEN="${REPLY_ASSISTANT_GATEWAY_TOKEN:-2d4a52dc51f4b5bd46aee3a875df27c558c162812e5089722621d43bebf5f55d}"
-TONE="${1:-normal}"  # normal, casual, formal
+export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
-if [ -z "$GATEWAY_TOKEN" ]; then
-  osascript -e 'display notification "Gateway Tokenが未設定です" with title "Reply Assistant ❌"'
-  exit 1
-fi
+# --- Configuration ---
+GATEWAY_URL="${REPLY_ASSISTANT_GATEWAY_URL:-http://127.0.0.1:18789}"
+GATEWAY_TOKEN="${REPLY_ASSISTANT_GATEWAY_TOKEN:-YOUR_TOKEN_HERE}"
+MODEL="${REPLY_ASSISTANT_MODEL:-claude-sonnet-4-5-20250929}"
+# ---------------------
 
-# Read from clipboard (user copies text first with ⌘C)
-SELECTED=$(pbpaste)
+SELECTED="$@"
 
 if [ -z "$SELECTED" ]; then
-  osascript -e 'display notification "テキストが選択されていません" with title "Reply Assistant ❌"'
+  osascript -e 'display notification "No text selected" with title "Reply Assistant ❌"'
   exit 1
 fi
 
-# Show processing notification
-osascript -e 'display notification "返信を生成中..." with title "Reply Assistant ✨"'
-
-# Tone instructions
-case "$TONE" in
-  casual)
-    TONE_TEXT="カジュアルでフレンドリーなトーンで返信を書いてください。"
-    ;;
-  formal)
-    TONE_TEXT="ビジネスにふさわしい丁寧な敬語で返信を書いてください。"
-    ;;
-  *)
-    TONE_TEXT="相手のメッセージのトーンに合わせて自然な返信を書いてください。"
-    ;;
-esac
-
 PROMPT="以下のメッセージに対する返信文を作成してください。
-${TONE_TEXT}
-返信文のみを出力してください（「返信：」などの接頭辞は不要）。
+相手のメッセージのトーンに合わせて自然な返信を書いてください。
+返信文のみを出力してください。
 
 ---
 ${SELECTED}
 ---"
 
-# Escape for JSON
-PROMPT_JSON=$(echo "$PROMPT" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))')
+ESCAPED=$(printf '%s' "$PROMPT" | jq -Rs .)
 
-# Call OpenClaw Gateway
-RESPONSE=$(curl -s -X POST "${GATEWAY_URL}/v1/chat/completions" \
+RESPONSE=$(curl -s \
   -H "Authorization: Bearer ${GATEWAY_TOKEN}" \
   -H "Content-Type: application/json" \
-  -d "{
-    \"model\": \"claude-sonnet-4-5-20250929\",
-    \"messages\": [{\"role\": \"user\", \"content\": ${PROMPT_JSON}}],
-    \"max_tokens\": 1000
-  }")
+  -d "{\"model\":\"${MODEL}\",\"messages\":[{\"role\":\"user\",\"content\":${ESCAPED}}]}" \
+  "${GATEWAY_URL}/v1/chat/completions")
 
-# Extract reply
-REPLY=$(echo "$RESPONSE" | python3 -c '
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    print(data["choices"][0]["message"]["content"].strip())
-except Exception as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
-')
+REPLY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
-if [ $? -ne 0 ] || [ -z "$REPLY" ]; then
-  osascript -e 'display notification "返信の生成に失敗しました" with title "Reply Assistant ❌"'
+if [ -z "$REPLY" ] || [ "$REPLY" = "null" ]; then
+  osascript -e 'display notification "Failed to generate reply" with title "Reply Assistant ❌"'
   exit 1
 fi
 
-# Copy to clipboard
-echo -n "$REPLY" | pbcopy
+osascript -e "set the clipboard to \"$REPLY\""
 
-# Show success notification
-osascript -e "display notification \"クリップボードにコピーしました\" with title \"Reply Assistant ✅\""
+afplay /System/Library/Sounds/Glass.aiff
