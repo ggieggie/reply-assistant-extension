@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      margin: 0;
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #0f0f23;
+      color: #e0e0e0;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #5b6abf;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 16px;
+      background: #5b6abf;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { background: #4a59ae; }
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      text-align: center;
+      color: #6b6;
+    }
+    .help {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #666;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>✨ Reply Assistant</h1>
+  
+  <label>Gateway URL</label>
+  <input type="text" id="gatewayUrl" placeholder="http://127.0.0.1:18789">
+  
+  <label>Gateway Token</label>
+  <input type="password" id="gatewayToken" placeholder="OpenClaw Gateway Token">
+  
+  <label>返信の言語</label>
+  <select id="language">
+    <option value="ja">日本語</option>
+    <option value="en">English</option>
+    <option value="auto">自動（元の言語に合わせる）</option>
+  </select>
+  
+  <button id="save">保存</button>
+  <div class="status" id="status"></div>
+  
+  <div class="help">
+    <strong>使い方:</strong><br>
+    1. テキストを選択<br>
+    2. 右クリック →「返信文を生成」<br>
+    3. クリップボードに自動コピー<br>
+    4. Ctrl+V で貼り付け
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
